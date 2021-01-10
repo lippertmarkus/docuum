@@ -3,7 +3,7 @@ FROM rust:alpine AS build
 RUN apk add --no-cache musl-dev docker-cli
 WORKDIR /build
 COPY . .
-RUN cargo build --target x86_64-unknown-linux-musl --release
+RUN cargo build --release
 
 # A minimal base image
 FROM alpine:3.12.1
@@ -11,4 +11,4 @@ FROM alpine:3.12.1
 # an init process, so be sure to pass `--init` to `docker run`.
 ENTRYPOINT ["/usr/local/bin/docuum"]
 COPY --from=build /usr/bin/docker /usr/bin/docker
-COPY --from=build /build/target/x86_64-unknown-linux-musl/release/docuum /usr/local/bin/docuum
+COPY --from=build /build/target/release/docuum /usr/local/bin/docuum
