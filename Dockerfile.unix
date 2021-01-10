@@ -1,14 +1,21 @@
-FROM rust:alpine AS build
-# Install the Docker CLI.
-RUN apk add --no-cache musl-dev docker-cli
+FROM rust AS build
+SHELL ["/bin/bash", "-c"]
 WORKDIR /build
 COPY . .
-RUN cargo build --release
+RUN UNAME=$(uname -m) ;\
+    if [[ "$UNAME" == "x86_64" ]]; then \
+        apt update;\
+        apt install -y musl-dev;\
+        rustup target add x86_64-unknown-linux-musl; \
+        TARGET="--target x86_64-unknown-linux-musl"; \
+    fi ; \
+    cargo build $TARGET --release
 
 # A minimal base image
 FROM alpine:3.12.1
+# Install the Docker CLI.
+RUN apk add --no-cache docker-cli
 # Set the entrypoint to Docuum. Note that Docuum is not intended to be run as
 # an init process, so be sure to pass `--init` to `docker run`.
 ENTRYPOINT ["/usr/local/bin/docuum"]
-COPY --from=build /usr/bin/docker /usr/bin/docker
 COPY --from=build /build/target/release/docuum /usr/local/bin/docuum
