@@ -49,7 +49,7 @@ jobs:
           push: false
           tags: lippertmarkus/docuum:latest
           file: ./Dockerfile.unix
-          platforms: linux/386,linux/amd64,linux/arm/v6,linux/arm/v7,linux/arm64,linux/ppc64le,linux/s390x
+          platforms: linux/386,linux/amd64,linux/arm/v7,linux/arm64  # all current supported architectures of rust image
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache
 
