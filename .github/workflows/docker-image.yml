@@ -13,14 +13,9 @@ defaults:
 
 jobs:
   build-linux:
-    name: Build & push
+    name: Build & push for Linux
     runs-on: ubuntu-latest
-#    strategy:
-#      matrix:
-#        os: [ubuntu-latest]
-#        #arch: [x86_64-unknown-linux-musl|linux/amd64, aarch64-unknown-linux-musl|linux/arm64, armv7-unknown-linux-musleabihf, powerpc64le-unknown-linux-gnu]
     steps:
-      #- uses: actions/checkout@v2
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
@@ -36,20 +31,20 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-buildx-
 
-#      - name: Login to DockerHub
-#        uses: docker/login-action@v1
-#        with:
-#          username: ${{ secrets.DOCKERHUB_USERNAME  }}
-#          password: ${{ secrets.DOCKERHUB_TOKEN  }}
+      - name: Login to DockerHub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME  }}
+          password: ${{ secrets.DOCKERHUB_TOKEN  }}
 
       - name: Build and push
         id: docker_build
         uses: docker/build-push-action@v2
         with:
-          push: false
+          push: true
           tags: lippertmarkus/docuum:latest
           file: ./Dockerfile.unix
-          platforms: linux/386,linux/amd64,linux/arm/v7,linux/arm64  # all current supported architectures of rust image
+          platforms: linux/386,linux/amd64,linux/arm/v7,linux/arm64  # all currently supported architectures of rust image
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache
 

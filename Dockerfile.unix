@@ -1,5 +1,5 @@
-# fetch the vendor with the builder platform to avoid qemu issues (https://github.com/docker/buildx/issues/395)
-FROM --platform=$BUILDPLATFORM rust AS server-sources
+# Fetch the vendor with the builder platform to avoid QEMU issues (https://github.com/docker/buildx/issues/395) and allow multi-arch images
+FROM --platform=$BUILDPLATFORM rust AS deps
 ENV USER=root
 WORKDIR /code
 RUN cargo init
@@ -10,11 +10,10 @@ RUN mkdir -p /code/.cargo \
 
 FROM rust AS build
 SHELL ["/bin/bash", "-c"]
-ENV USER=root
 WORKDIR /build
 COPY . .
-COPY --from=server-sources /code/.cargo /build/.cargo
-COPY --from=server-sources /code/vendor /build/vendor
+COPY --from=deps /code/.cargo /build/.cargo
+COPY --from=deps /code/vendor /build/vendor
 RUN UNAME=$(uname -m) ;\
     if [[ "$UNAME" == "x86_64" ]]; then \
         apt update;\
