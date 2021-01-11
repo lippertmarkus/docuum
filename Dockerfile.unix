@@ -1,7 +1,20 @@
+# fetch the vendor with the builder platform to avoid qemu issues (https://github.com/docker/buildx/issues/395)
+FROM --platform=$BUILDPLATFORM rust AS server-sources
+ENV USER=root
+WORKDIR /code
+RUN cargo init
+COPY Cargo.toml .
+COPY Cargo.lock .
+RUN mkdir -p /code/.cargo \
+  && cargo vendor > /code/.cargo/config
+
 FROM rust AS build
 SHELL ["/bin/bash", "-c"]
+ENV USER=root
 WORKDIR /build
 COPY . .
+COPY --from=server-sources /code/.cargo /build/.cargo
+COPY --from=server-sources /code/vendor /build/vendor
 RUN UNAME=$(uname -m) ;\
     if [[ "$UNAME" == "x86_64" ]]; then \
         apt update;\
@@ -9,7 +22,7 @@ RUN UNAME=$(uname -m) ;\
         rustup target add x86_64-unknown-linux-musl; \
         TARGET="--target x86_64-unknown-linux-musl"; \
     fi ; \
-    cargo build $TARGET --release
+    cargo install $TARGET --offline --path .
 
 # A minimal base image
 FROM alpine:3.12.1
@@ -18,4 +31,4 @@ RUN apk add --no-cache docker-cli
 # Set the entrypoint to Docuum. Note that Docuum is not intended to be run as
 # an init process, so be sure to pass `--init` to `docker run`.
 ENTRYPOINT ["/usr/local/bin/docuum"]
-COPY --from=build /build/target/release/docuum /usr/local/bin/docuum
+COPY --from=build /usr/local/cargo/bin/docuum /usr/local/bin/docuum
