@@ -120,8 +120,8 @@ jobs:
           output="/artifacts/docuum-windows-amd64.exe"
           id=$(docker create $IMAGE_NAME)
           docker cp "${id}:C:\docuum.exe" $output
-          shasum --algorithm 256 --binary $output > ${output}.sha256
-          shasum --algorithm 256 --check --status ${output}.sha256
+          "C:\Program Files\Git\usr\bin\core_perl\shasum" --algorithm 256 --binary $output > ${output}.sha256
+          "C:\Program Files\Git\usr\bin\core_perl\shasum" --algorithm 256 --check --status ${output}.sha256
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v2
