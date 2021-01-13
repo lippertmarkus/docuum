@@ -15,13 +15,27 @@ COPY . .
 COPY --from=deps /code/.cargo /build/.cargo
 COPY --from=deps /code/vendor /build/vendor
 RUN UNAME=$(uname -m) ;\
-    if [[ "$UNAME" == "x86_64" ]]; then \
-        apt update;\
-        apt install -y musl-dev;\
-        rustup target add x86_64-unknown-linux-musl; \
-        TARGET="--target x86_64-unknown-linux-musl"; \
-    fi ; \
-    cargo install $TARGET --offline --path .
+    apt update;\
+    apt install -y musl-dev musl-tools;\
+    echo $UNAME ; \
+    case "$UNAME" in \
+        "x86_64") \
+            length=$(getconf LONG_BIT) ; \
+            if [[ "$length" == "64" ]]; then \
+                TARGET="x86_64-unknown-linux-musl"; \
+            else \
+                TARGET="i686-unknown-linux-musl"; \
+            fi \
+            ;; \
+        "armv7l") \
+            TARGET="armv7-unknown-linux-musleabihf"; \
+            ;; \
+        "aarch64") \
+            TARGET="aarch64-unknown-linux-musl"; \
+            ;; \
+    esac ; \
+    rustup target add $TARGET ; \
+    cargo install --target $TARGET --offline --path .
 
 # A minimal base image
 FROM alpine:3.12.1
