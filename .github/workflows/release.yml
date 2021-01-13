@@ -49,12 +49,6 @@ jobs:
 
           echo "::set-output name=image_name::${DOCKERHUB_ORG}/docuum:${tag}"
 
-          # TODO debug
-          # enable experimental for using --platform flag
-          echo $'{\n    "experimental": true\n}' | sudo tee /etc/docker/daemon.json
-          sudo service docker restart
-          docker create --platform=linux/386 lippertmarkus/docuum:latest
-
       - name: Build and push
         id: docker_build
         uses: docker/build-push-action@v2
