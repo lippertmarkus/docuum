@@ -65,11 +65,11 @@ jobs:
         env:
           IMAGE_NAME: ${{ steps.img.outputs.image_name }}
         run: |
-          mkdir /artifacts/
+          mkdir /tmp/artifacts/
           platforms="linux/386 linux/amd64 linux/arm/v7 linux/arm64"
 
           for platform in platforms; do
-            output="/artifacts/docuum-${platform//\//-}"
+            output="/tmp/artifacts/docuum-${platform//\//-}"
             id=$(docker create --platform=$platform $IMAGE_NAME)
             docker cp ${id}:/usr/local/bin/docuum $output
             shasum --algorithm 256 --binary $output > ${output}.sha256
@@ -81,7 +81,7 @@ jobs:
         if: ${{ !contains(github.ref, 'master') }}
         with:
           name: artifacts
-          path: /artifacts/*
+          path: /tmp/artifacts/*
 
   build-windows:
     name: Build & push for Windows
@@ -116,8 +116,8 @@ jobs:
         env:
           IMAGE_NAME: ${{ steps.build.outputs.image_name }}
         run: |
-          mkdir /artifacts/
-          output="/artifacts/docuum-windows-amd64.exe"
+          mkdir /tmp/artifacts/
+          output="/tmp/artifacts/docuum-windows-amd64.exe"
           id=$(docker create $IMAGE_NAME)
           docker cp "${id}:C:\docuum.exe" $output
           "C:\Program Files\Git\usr\bin\core_perl\shasum" --algorithm 256 --binary $output > ${output}.sha256
@@ -128,7 +128,7 @@ jobs:
         if: ${{ !contains(github.ref, 'master') }}
         with:
           name: artifacts
-          path: /artifacts/*
+          path: /tmp/artifacts/*
 
   merge-manifests:
     name: Merge manifests for Linux and Windows
@@ -169,11 +169,11 @@ jobs:
       - uses: actions/download-artifact@v2
         with:
           name: artifacts
-          path: /artifacts
+          path: /tmp/artifacts
       - run: |
           set -x
           assets=()
-          for asset in /artifacts/*; do
+          for asset in /tmp/artifacts/*; do
             assets+=("-a" "$asset")
           done
           tag_name="${GITHUB_REF##*/}"
