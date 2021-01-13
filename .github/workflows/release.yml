@@ -43,6 +43,8 @@ jobs:
           DOCKERHUB_ORG: ${{ secrets.DOCKERHUB_USERNAME }}
         run: |
           cat $HOME/.docker/config.json
+          echo $(jq -c '. + { "experimental": "enabled" }' $HOME/.docker/config.json) > $HOME/.docker/config.json
+          cat $HOME/.docker/config.json
 
           tag=$(basename $GITHUB_REF)
           if [ $tag = "master" ]; then
