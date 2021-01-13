@@ -42,6 +42,8 @@ jobs:
         env:
           DOCKERHUB_ORG: ${{ secrets.DOCKERHUB_USERNAME }}
         run: |
+          cat $HOME/.docker/config.json
+
           tag=$(basename $GITHUB_REF)
           if [ $tag = "master" ]; then
             tag="latest"
