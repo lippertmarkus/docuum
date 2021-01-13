@@ -65,6 +65,7 @@ jobs:
         env:
           IMAGE_NAME: ${{ steps.img.outputs.image_name }}
         run: |
+          echo $(jq -c '. + { "experimental": "enabled" }' ${DOCKER_CONFIG}/config.json) > ${DOCKER_CONFIG}/config.json
           mkdir /tmp/artifacts/
           platforms="linux/386 linux/amd64 linux/arm/v7 linux/arm64"
 
@@ -116,8 +117,8 @@ jobs:
         env:
           IMAGE_NAME: ${{ steps.build.outputs.image_name }}
         run: |
-          mkdir /tmp/artifacts/
-          output="/tmp/artifacts/docuum-windows-amd64.exe"
+          mkdir artifacts/
+          output="artifacts/docuum-windows-amd64.exe"
           id=$(docker create $IMAGE_NAME)
           docker cp "${id}:C:\docuum.exe" $output
           "C:\Program Files\Git\usr\bin\core_perl\shasum" --algorithm 256 --binary $output > ${output}.sha256
@@ -128,7 +129,7 @@ jobs:
         if: ${{ !contains(github.ref, 'master') }}
         with:
           name: artifacts
-          path: /tmp/artifacts/*
+          path: artifacts/*
 
   merge-manifests:
     name: Merge manifests for Linux and Windows
