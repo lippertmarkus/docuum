@@ -79,6 +79,7 @@ jobs:
             docker cp ${id}:/usr/local/bin/docuum $output
             shasum --algorithm 256 --binary $output > ${output}.sha256
             shasum --algorithm 256 --check --status ${output}.sha256
+            file $output
           done
 
       - name: Upload artifacts
@@ -86,7 +87,7 @@ jobs:
         if: ${{ !contains(github.ref, 'master') }}
         with:
           name: artifacts
-          path: /tmp/artifacts/  # TODO add star
+          path: /tmp/artifacts/*
 
   build-windows:
     name: Build & push for Windows
