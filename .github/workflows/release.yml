@@ -152,7 +152,7 @@ jobs:
           path: artifacts/*
 
   build-apple:
-    name: Build & push for Apple darwin platforms
+    name: Build & push for Apple
     runs-on: macos-latest
     #if: ${{ !contains(github.ref, 'master') }}  # TODO include
     steps:
@@ -165,8 +165,8 @@ jobs:
 
           for target in $targets; do
             echo "TARGET: ${target}"
-            rustup target add $TARGET ;
-            cargo install --target $TARGET --path .
+            rustup target add $target ;
+            cargo install --target $target --path .
             output="/tmp/artifacts/docuum-${target}"
             cp /usr/local/cargo/bin/docuum $output
             shasum --algorithm 256 --binary $output > ${output}.sha256
