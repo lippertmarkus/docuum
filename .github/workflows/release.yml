@@ -66,6 +66,7 @@ jobs:
           IMAGE_NAME: ${{ steps.img.outputs.image_name }}
         run: |
           # enable experimental for using --platform flag
+          echo $(jq -c '. + { "experimental": "enabled" }' $HOME/.docker/config.json) > $HOME/.docker/config.json
           echo $'{\n    "experimental": true\n}' | sudo tee /etc/docker/daemon.json
           sudo service docker restart
 
@@ -85,7 +86,7 @@ jobs:
         if: ${{ !contains(github.ref, 'master') }}
         with:
           name: artifacts
-          path: /tmp/artifacts/*
+          path: /tmp/artifacts/  # TODO add star
 
   build-windows:
     name: Build & push for Windows
