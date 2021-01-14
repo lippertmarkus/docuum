@@ -161,17 +161,13 @@ jobs:
       - name: Build
         run: |
           mkdir /tmp/artifacts/
-          targets="x86_64-apple-darwin aarch64-apple-darwin"
-
-          for target in $targets; do
-            echo "TARGET: ${target}"
-            rustup target add $target ;
-            cargo install --target $target --path .
-            output="/tmp/artifacts/docuum-${target}"
-            cp /Users/runner/.cargo/bin/docuum $output
-            shasum --algorithm 256 --binary $output > ${output}.sha256
-            shasum --algorithm 256 --check --status ${output}.sha256
-          done
+          target="x86_64-apple-darwin"
+          rustup target add $target ;
+          cargo install --target $target --path .
+          output="/tmp/artifacts/docuum-${target}"
+          cp /Users/runner/.cargo/bin/docuum $output
+          shasum --algorithm 256 --binary $output > ${output}.sha256
+          shasum --algorithm 256 --check --status ${output}.sha256
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v2
