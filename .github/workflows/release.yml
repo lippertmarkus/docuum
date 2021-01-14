@@ -161,7 +161,7 @@ jobs:
       - name: Build
         run: |
           mkdir /tmp/artifacts/
-          targets="x86_64-apple-darwin i686-apple-darwin aarch64-apple-darwin"
+          targets="x86_64-apple-darwin aarch64-apple-darwin"
 
           for target in $targets; do
             echo "TARGET: ${target}"
