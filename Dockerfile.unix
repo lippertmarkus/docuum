@@ -1,4 +1,4 @@
-# TODO if this works we can add all targets that alpine image supports
+# use buildplatform as rust is able to cross-compile, which is much faster then using QEMU
 FROM --platform=$BUILDPLATFORM rust AS build
 SHELL ["/bin/bash", "-c"]
 WORKDIR /build
@@ -25,6 +25,11 @@ RUN apt update ; \
             LINKER="aarch64-linux-gnu" ; \
             apt-get install -qq gcc-$LINKER ; \
             TARGET="aarch64-unknown-linux-musl"; \
+            ;; \
+        "linux/arm/v6") \
+            LINKER="arm-linux-gnueabihf" ; \
+            apt-get install -qq gcc-$LINKER ; \
+            TARGET="arm-unknown-linux-musleabihf"; \
             ;; \
     esac ; \
     mkdir .cargo ; \
