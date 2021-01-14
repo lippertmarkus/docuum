@@ -1,41 +1,37 @@
-# Fetch the vendor with the builder platform to avoid QEMU issues (https://github.com/docker/buildx/issues/395) and allow multi-arch images
-FROM --platform=$BUILDPLATFORM rust AS deps
-ENV USER=root
-WORKDIR /code
-RUN cargo init
-COPY Cargo.toml .
-COPY Cargo.lock .
-RUN mkdir -p /code/.cargo \
-  && cargo vendor > /code/.cargo/config
-
-FROM rust AS build
+# TODO if this works we can add all targets that alpine image supports
+FROM --platform=$BUILDPLATFORM rust AS build
 SHELL ["/bin/bash", "-c"]
 WORKDIR /build
 COPY . .
-COPY --from=deps /code/.cargo /build/.cargo
-COPY --from=deps /code/vendor /build/vendor
-RUN UNAME=$(uname -m) ;\
-    apt update;\
-    apt install -y musl-dev musl-tools;\
-    echo $UNAME ; \
-    case "$UNAME" in \
-        "x86_64") \
-            length=$(getconf LONG_BIT) ; \
-            if [[ "$length" == "64" ]]; then \
-                TARGET="x86_64-unknown-linux-musl"; \
-            else \
-                TARGET="i686-unknown-linux-musl"; \
-            fi \
+ARG TARGETPLATFORM
+RUN apt update ; \
+    case "$TARGETPLATFORM" in \
+        "linux/amd64") \
+            LINKER="x86_64-linux-gnu" ; \
+            apt-get install -qq gcc-x86-64-linux-gnu ; \
+            TARGET="x86_64-unknown-linux-musl"; \
             ;; \
-        "armv7l") \
+        "linux/386") \
+            LINKER="i686-linux-gnu" ; \
+            apt-get install -qq gcc-$LINKER ; \
+            TARGET="i686-unknown-linux-musl"; \
+            ;; \
+        "linux/arm/v7") \
+            LINKER="arm-linux-gnueabihf" ; \
+            apt-get install -qq gcc-$LINKER ; \
             TARGET="armv7-unknown-linux-musleabihf"; \
             ;; \
-        "aarch64") \
+        "linux/arm64") \
+            LINKER="aarch64-linux-gnu" ; \
+            apt-get install -qq gcc-$LINKER ; \
             TARGET="aarch64-unknown-linux-musl"; \
             ;; \
     esac ; \
+    mkdir .cargo ; \
+    echo "[target.$TARGET]" >> .cargo/config ; \
+    echo "linker = \"${LINKER}-gcc\"" >> .cargo/config ; \
     rustup target add $TARGET ; \
-    cargo install --target $TARGET --offline --path .
+    cargo install --target $TARGET --path .
 
 # A minimal base image
 FROM alpine:3.12.1
