@@ -56,7 +56,6 @@ jobs:
           push: true
           tags: ${{ steps.img.outputs.image_name }}
           file: ./Dockerfile.unix
-          load: true
           platforms: linux/386,linux/amd64,linux/arm/v7,linux/arm64  # all currently supported architectures of rust image
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache
@@ -76,7 +75,7 @@ jobs:
 
           for platform in $platforms; do
             output="/tmp/artifacts/docuum-${platform//\//-}"
-            id=$(docker create --platform=$platform $IMAGE_NAME)
+            id=$(docker create --pull always --platform=$platform $IMAGE_NAME)
             docker cp ${id}:/usr/local/bin/docuum $output
             shasum --algorithm 256 --binary $output > ${output}.sha256
             shasum --algorithm 256 --check --status ${output}.sha256
